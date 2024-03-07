@@ -3,13 +3,13 @@
 ### Installation
 
 ```julia
-]add https://github.com/SciML/QuantumNLDiffEq.jl
+]add [https://github.com/SciML/QuantumNLDiffEq.jl](https://github.com/HuynhTran0301/QuantumNLDiffEq_change.jl)
 ```
 
 ### Usage
 
 ```julia
-using DifferentialEquations, Yao, QuantumNLDiffEq
+using DifferentialEquations, Yao, QuantumNLDiffEq_change
 # Making the ODEProblem
 function f(u, p, t)
 	λ, κ = p
