@@ -28,12 +28,8 @@ abstract type AbstractRegularisationParams end
 abstract type AbstractCostParams end
 		
 struct Product <: AbstractFeatureMap end
-struct ChebyshevSparse <: AbstractFeatureMap 
-	pc::Int64 
-end
-struct ChebyshevTower <: AbstractFeatureMap 
-	pc::Int64 
-end
+struct ChebyshevSparse <: AbstractFeatureMap end
+struct ChebyshevTower <: AbstractFeatureMap end
 Base.@kwdef mutable struct Pinned <: AbstractBoundaryHandling 
 	eta::Float64 = 1.0
 end
