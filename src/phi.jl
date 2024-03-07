@@ -1,5 +1,5 @@
-function phi(x, ::Product)
-	return asin(x)
+function phi(x, mapping::Product)
+	return mapping.pc*asin(x)
 end
 
 function phi(x, mapping::ChebyshevSparse)
