@@ -27,15 +27,9 @@ abstract type AbstractLoss end
 abstract type AbstractRegularisationParams end
 abstract type AbstractCostParams end
 		
-struct Product <: AbstractBoundaryHandling  
-	pc::Float64
-end
-struct ChebyshevSparse <: AbstractBoundaryHandling 
-	pc::Float64
-end
-struct ChebyshevTower <: AbstractBoundaryHandling 
-	pc::Float64
-end
+struct Product <: AbstractFeatureMap  end
+struct ChebyshevSparse <: AbstractFeatureMap end
+struct ChebyshevTower <: AbstractFeatureMap end
 Base.@kwdef mutable struct Pinned <: AbstractBoundaryHandling 
 	eta::Float64 = 1.0
 end
@@ -55,7 +49,7 @@ struct CostParams <: AbstractCostParams
 end
 
 Base.@kwdef mutable struct DQCType
-	afm::AbstractBoundaryHandling
+	afm::AbstractFeatureMap
 	fm::AbstractBlock
 	cost::Union{Vector{<:AbstractBlock}, Vector{<:Vector{<:AbstractBlock}}}
 	var::AbstractBlock
