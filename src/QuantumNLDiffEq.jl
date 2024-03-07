@@ -27,7 +27,9 @@ abstract type AbstractLoss end
 abstract type AbstractRegularisationParams end
 abstract type AbstractCostParams end
 		
-struct Product <: AbstractFeatureMap end
+struct Product <: AbstractFeatureMap
+	pc::Int64 
+end
 struct ChebyshevSparse <: AbstractFeatureMap 
 	pc::Int64 
 end
