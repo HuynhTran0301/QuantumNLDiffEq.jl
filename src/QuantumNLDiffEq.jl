@@ -27,9 +27,15 @@ abstract type AbstractLoss end
 abstract type AbstractRegularisationParams end
 abstract type AbstractCostParams end
 		
-struct Product <: AbstractFeatureMap  end
-struct ChebyshevSparse <: AbstractFeatureMap end
-struct ChebyshevTower <: AbstractFeatureMap end
+struct Product <: AbstractFeatureMap 
+	pc::Float64
+end
+struct ChebyshevSparse <: AbstractFeatureMap 
+	pc::Float64
+end
+struct ChebyshevTower <: AbstractFeatureMap 
+	pc::Float64
+end
 Base.@kwdef mutable struct Pinned <: AbstractBoundaryHandling 
 	eta::Float64 = 1.0
 end
@@ -54,7 +60,6 @@ Base.@kwdef mutable struct DQCType
 	cost::Union{Vector{<:AbstractBlock}, Vector{<:Vector{<:AbstractBlock}}}
 	var::AbstractBlock
 	N::Int64
-	pc::Float64 = 2.0
 	evol::Union{TimeEvolution, IdentityGate} = igate(N)
 end
 
