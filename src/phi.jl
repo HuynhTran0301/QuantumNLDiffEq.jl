@@ -1,12 +1,12 @@
 function phi(x, mapping::Product)
-	return 2*asin(x)
+	return mapping.pc*asin(x)
 end
 
 function phi(x, mapping::ChebyshevSparse)
-	return 2*acos(x)
+	return mapping.pc*acos(x)
 end
 
 function phi(x, mapping::ChebyshevTower)
-	return 2*acos(x)
+	return mapping.pc*acos(x)
 end
 
