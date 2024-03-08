@@ -1,12 +1,12 @@
-function phi(x, pc, ::Product)
-	return pc*asin(x)
+function phi(x, ::Product)
+	return 2*asin(x)
 end
 
-function phi(x, pc, ::ChebyshevSparse)
-	return pc*acos(x)
+function phi(x, ::ChebyshevSparse)
+	return 2*acos(x)
 end
 
-function phi(x, pc, ::ChebyshevTower)
-	return pc*acos(x)
+function phi(x,::ChebyshevTower)
+	return 2*acos(x)
 end
 
