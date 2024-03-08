@@ -1,13 +1,13 @@
 function load(x, N, mapping::Product)
-	return repeat([phi(x, N-1, mapping)], N)
+	return repeat([phi(x, mapping)], N)
 end
 
 function load(x, N, mapping::ChebyshevSparse)
-	return repeat([phi(x, N-1, mapping)], N)
+	return repeat([phi(x, mapping)], N)
 end
 
 function load(x, N, mapping::ChebyshevTower)
-	return [i*phi(x, N-1, mapping) for i in 1:N]
+	return [i*phi(x, mapping) for i in 1:N]
 end
 
 function new_circuit(DQC::DQCType, x, theta, n=1, v=0)
