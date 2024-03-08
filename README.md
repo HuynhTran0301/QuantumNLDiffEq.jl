@@ -3,7 +3,7 @@
 ### Installation
 
 ```julia
-]add [https://github.com/SciML/QuantumNLDiffEq.jl](https://github.com/HuynhTran0301/QuantumNLDiffEq_change.jl)
+]add https://github.com/HuynhTran0301/QuantumNLDiffEq_change.jl
 ```
 
 ### Usage
