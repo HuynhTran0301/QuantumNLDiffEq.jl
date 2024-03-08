@@ -11,4 +11,4 @@ end
 function phi(x, mapping::ChebyshevTower)
 	return mapping.pc*acos(x)
 end
-
+@adjoint phi(x, mapping::ChebyshevTower) = phi(x, mapping), Δ -> (Δ * grad_phi_with_respect_to_x(x, mapping), nothing)
