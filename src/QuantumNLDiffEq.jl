@@ -54,7 +54,6 @@ Base.@kwdef mutable struct DQCType
 	cost::Union{Vector{<:AbstractBlock}, Vector{<:Vector{<:AbstractBlock}}}
 	var::AbstractBlock
 	N::Int64
-	pc::Int64 = 2
 	evol::Union{TimeEvolution, IdentityGate} = igate(N)
 end
 
