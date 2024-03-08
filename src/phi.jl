@@ -7,6 +7,8 @@ function phi(x, mapping::ChebyshevSparse)
 end
 
 function phi(x, mapping::ChebyshevTower)
-	return 2*acos(x)
+	a = mapping.pc
+	println(a)
+	return a*acos(x)
 end
 
