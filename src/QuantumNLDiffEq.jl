@@ -87,50 +87,40 @@ function train!(DQC::Union{DQCType, Vector{DQCType}}, prob::AbstractODEProblem, 
                 return config
             end
             fc = config.abh.fc
-            grads, current_loss = gradient((_theta, _fc) -> loss(DQC, prob, conf(_fc, config), M, _theta), theta, fc)
-            push!(losses, current_loss) # Store the current loss
-            
-            if DQC isa DQCType
-                for (p,g) in zip([theta, [fc]], [grads[1], [grads[2]]])
-                    update!(optimizer, p, g)
-                end
-                dispatch!(DQC.var, theta)
-            else
-                for (p,g) in zip([theta, [[fc]]], [grads[1], [[grads[2]]]])
-                    for (x,y) in zip(p,g)
-                        update!(optimizer, x, y)
-                    end
-                end
-                for i in 1:length(DQC)
-                    dispatch!(DQC[i].var, theta[i])
-                end
+            # Correct handling of gradient and potential loss
+            grad_fn = (_theta, _fc) -> begin
+                l, grad = Zygote.pullback(_theta -> loss(DQC, prob, conf(_fc, config), M, _theta), theta)
+                return l, grad(1) # Assuming loss function returns a single value
             end
-            for i in 1:length(DQC)
-                dispatch!(DQC[i].var, theta[i])
-            end
-            config.abh = Optimized(fc)
-        else
-            grads, current_loss = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)
-            push!(losses, current_loss) # Store the current loss
+            loss_value, grads = grad_fn(theta, fc)
+            push!(losses, loss_value)
             
             if DQC isa DQCType
                 update!(optimizer, theta, grads[1])
+                if typeof(fc) == typeof(grads[2]) # Check if fc and grads[2] are compatible
+                    update!(optimizer, fc, grads[2])
+                end
                 dispatch!(DQC.var, theta)
             else
-                for (p, g) in zip(theta, grads[1])
-                    update!(optimizer, p, g)
-                end
-                for i in 1:length(DQC)
-                    dispatch!(DQC[i].var, theta[i])
-                end
+                # Handle Vector{DQCType} scenario
+                error("Vector{DQCType} handling not implemented in this snippet.")
+            end
+            config.abh = Optimized(fc)
+        else
+            grads, loss_value = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)
+            push!(losses, loss_value)
+            
+            if DQC isa DQCType
+                update!(optimizer, theta, grads)
+                dispatch!(DQC.var, theta)
+            else
+                # Handle Vector{DQCType} scenario
+                error("Vector{DQCType} handling not implemented in this snippet.")
             end
         end
-
-        # Optionally print the loss at each step
         # println("Step $_, Loss: $(losses[end])")
     end
 
-    # Return the array of losses at the end of training
     return losses
 end
 
