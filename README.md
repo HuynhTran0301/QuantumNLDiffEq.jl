@@ -9,7 +9,7 @@
 ### Usage
 
 ```julia
-using DifferentialEquations, Yao, QuantumNLDiffEq_change
+using DifferentialEquations, Yao, QuantumNLDiffEq
 # Making the ODEProblem
 function f(u, p, t)
 	λ, κ = p
@@ -28,7 +28,7 @@ evalue(M) = [QuantumNLDiffEq.calculate_evalue(DQC[1], DQC[1].cost, prob.u0[1], c
 params = [Yao.parameters(DQC[1].var)]
 
 #Training the circuit
-QuantumNLDiffEq.train!(DQC, prob, config, M, params)
+loss = QuantumNLDiffEq.train!(DQC, prob, config, M, params)
 
 #Plotting the solution
 using Plots
