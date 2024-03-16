@@ -77,48 +77,57 @@ include("calculate_evalue.jl")
 include("loss.jl")
 
 function train!(DQC::Union{DQCType, Vector{DQCType}}, prob::AbstractODEProblem, config::DQCConfig, M::AbstractVector, theta; optimizer=Adam(0.075), steps=300)
-    # Initialize a container to hold the loss values
-    losses = Float64[]
+	losses = Float64[]
+	
+	for _ in 1:steps
+		if config.abh isa Optimized
+			function conf(fc, config::DQCConfig)
+				config.abh = Optimized(fc)
+				return config
+			end
+			fc = config.abh.fc
 
-    for _ in 1:steps
-        # Calculate loss and then compute gradients
-        if config.abh isa Optimized
-            function conf(fc, config::DQCConfig)
-                config.abh = Optimized(fc)
-                return config
-            end
-            fc = config.abh.fc
-            current_loss = loss(DQC, prob, conf(fc, config), M, theta) # Direct loss calculation
-            push!(losses, current_loss) # Store the current loss
-
-            grads = gradient((_theta, _fc) -> loss(DQC, prob, conf(_fc, config), M, _theta), theta, fc)[1] # Assuming the structure of the returned tuple matches this
-
-            if DQC isa DQCType
-                update!(optimizer, theta, grads[1]) # Update theta
-                if length(grads) > 1 # Check if fc gradient exists
-                    update!(optimizer, [fc], [grads[2]]) # Update fc
-                end
-                dispatch!(DQC.var, theta)
-            else
-                # Similar logic for Vector{DQCType}, handling each DQC and its gradients
-            end
-            config.abh = Optimized(fc)
-        else
-            current_loss = loss(DQC, prob, config, M, theta) # Direct loss calculation
-            push!(losses, current_loss) # Store the current loss
-
-            grads = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)[1]
-            # Update logic for theta and possibly DQC.var
-        end
-    end
-
-    return theta, losses
+			current_loss = loss(DQC, prob, conf(fc, config), M, theta) # Direct loss calculation
+            		push!(losses, current_loss) # Store the current loss
+			
+			grads = gradient((_theta, _fc) -> loss(DQC, prob, conf(_fc, config), M, _theta), theta, fc)
+			if DQC isa DQCType
+				for (p,g) in zip([theta, [fc]], [grads[1], [grads[2]]])
+					update!(optimizer, p, g)
+				end
+				dispatch!(DQC.var, theta)
+			else
+				for (p,g) in zip([theta, [[fc]]], [grads[1], [[grads[2]]]])
+					for (x,y) in zip(p,g)
+						update!(optimizer, x, y)
+					end
+				end
+				for i in 1:length(DQC)
+					dispatch!(DQC[i].var, theta[i])
+				end
+			end
+			for i in 1:length(DQC)
+				dispatch!(DQC[i].var, theta[i])
+			end
+			config.abh = Optimized(fc)
+		else
+			grads = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)[1]
+			if DQC isa DQCType
+				update!(optimizer, theta, grads)
+				dispatch!(DQC.var, theta)
+			else
+				for (p, g) in zip(theta, grads)
+  					update!(optimizer, p, g)
+				end
+				for i in 1:length(DQC)
+					dispatch!(DQC[i].var, theta[i])
+				end
+			end
+		end
+	end
+	return losses
 end
 
-
-    # Return both the final theta and the losses
-    return theta, losses
-end
 
 function tr_custom!(DQC::Union{Vector{DQCType}, DQCType}, prob::AbstractODEProblem, config::DQCConfig, M::AbstractVector, theta; optimizer=Adam(0.075), steps=300)
 	for s in 1:steps
