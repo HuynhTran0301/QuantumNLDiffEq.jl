@@ -112,7 +112,7 @@ function train!(DQC::Union{DQCType, Vector{DQCType}}, prob::AbstractODEProblem, 
 			end
 			config.abh = Optimized(fc)
 		else
-			current_loss = loss(DQC, prob, config, M, _theta), theta) # Direct loss calculation
+			current_loss = loss(DQC, prob, config, M, _theta) # Direct loss calculation
             		push!(losses, current_loss) # Store the current loss
 			
 			grads = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)[1]
