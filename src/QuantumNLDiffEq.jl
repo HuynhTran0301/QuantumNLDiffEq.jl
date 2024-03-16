@@ -81,54 +81,40 @@ function train!(DQC::Union{DQCType, Vector{DQCType}}, prob::AbstractODEProblem, 
     losses = Float64[]
 
     for _ in 1:steps
-        # Calculate loss differently based on the abh configuration
+        # Calculate loss and then compute gradients
         if config.abh isa Optimized
             function conf(fc, config::DQCConfig)
                 config.abh = Optimized(fc)
                 return config
             end
             fc = config.abh.fc
-            # Compute gradients and loss, capturing the loss
-            grads, current_loss = gradient((_theta, _fc) -> loss(DQC, prob, conf(_fc, config), M, _theta), theta, fc)
+            current_loss = loss(DQC, prob, conf(fc, config), M, theta) # Direct loss calculation
             push!(losses, current_loss) # Store the current loss
 
+            grads = gradient((_theta, _fc) -> loss(DQC, prob, conf(_fc, config), M, _theta), theta, fc)[1] # Assuming the structure of the returned tuple matches this
+
             if DQC isa DQCType
-                for (p,g) in zip([theta, [fc]], [grads[1], [grads[2]]])
-                    update!(optimizer, p, g)
+                update!(optimizer, theta, grads[1]) # Update theta
+                if length(grads) > 1 # Check if fc gradient exists
+                    update!(optimizer, [fc], [grads[2]]) # Update fc
                 end
                 dispatch!(DQC.var, theta)
             else
-                for (p,g) in zip([theta, [[fc]]], [grads[1], [[grads[2]]]])
-                    for (x,y) in zip(p,g)
-                        update!(optimizer, x, y)
-                    end
-                end
-                for i in 1:length(DQC)
-                    dispatch!(DQC[i].var, theta[i])
-                end
-            end
-            for i in 1:length(DQC)
-                dispatch!(DQC[i].var, theta[i])
+                # Similar logic for Vector{DQCType}, handling each DQC and its gradients
             end
             config.abh = Optimized(fc)
         else
-            # Compute gradients and capture the loss for the non-Optimized case
-            grads, current_loss = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)
-            push!(losses, current_loss[1]) # Store the current loss
+            current_loss = loss(DQC, prob, config, M, theta) # Direct loss calculation
+            push!(losses, current_loss) # Store the current loss
 
-            if DQC isa DQCType
-                update!(optimizer, theta, grads[1])
-                dispatch!(DQC.var, theta)
-            else
-                for (p, g) in zip(theta, grads[1])
-                    update!(optimizer, p, g)
-                end
-                for i in 1:length(DQC)
-                    dispatch!(DQC[i].var, theta[i])
-                end
-            end
+            grads = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)[1]
+            # Update logic for theta and possibly DQC.var
         end
     end
+
+    return theta, losses
+end
+
 
     # Return both the final theta and the losses
     return theta, losses
