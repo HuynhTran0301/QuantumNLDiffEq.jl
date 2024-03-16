@@ -21,7 +21,7 @@ function loss_func(a, b)
 end
 
 #Making the DQC
-DQC = [QuantumNLDiffEq.DQCType(afm = QuantumNLDiffEq.ChebyshevSparse(), fm = chain(6, [put(i=>Ry(0)) for i in 1:6]), cost = [Add([put(6, i=>Z) for i in 1:6])], var = dispatch(EasyBuild.variational_circuit(6,5), :random), N = 6)]
+DQC = [QuantumNLDiffEq.DQCType(afm = QuantumNLDiffEq.ChebyshevSparse(2.0), fm = chain(6, [put(i=>Ry(0)) for i in 1:6]), cost = [Add([put(6, i=>Z) for i in 1:6])], var = dispatch(EasyBuild.variational_circuit(6,5), :random), N = 6)]
 config = DQCConfig(abh = QuantumNLDiffEq.Floating(), loss = loss_func)
 M = range(start=0; stop=0.9, length=20)
 evalue(M) = [QuantumNLDiffEq.calculate_evalue(DQC[1], DQC[1].cost, prob.u0[1], config.abh, params[1], M[x], M[1]) for x in 1:length(M)]
