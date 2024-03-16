@@ -80,15 +80,17 @@ function train!(DQC::Union{DQCType, Vector{DQCType}}, prob::AbstractODEProblem, 
 	losses = Float64[]
 	
 	for _ in 1:steps
-		current_loss = loss(DQC, prob, conf(fc, config), M, theta) # Direct loss calculation
-            	push!(losses, current_loss) # Store the current loss
-
+		
 		if config.abh isa Optimized
 			function conf(fc, config::DQCConfig)
 				config.abh = Optimized(fc)
 				return config
 			end
 			fc = config.abh.fc
+			
+			current_loss = loss(DQC, prob, conf(fc, config), M, theta) # Direct loss calculation
+            		push!(losses, current_loss) # Store the current loss
+			
 			grads = gradient((_theta, _fc) -> loss(DQC, prob, conf(_fc, config), M, _theta), theta, fc)
 			if DQC isa DQCType
 				for (p,g) in zip([theta, [fc]], [grads[1], [grads[2]]])
@@ -110,6 +112,9 @@ function train!(DQC::Union{DQCType, Vector{DQCType}}, prob::AbstractODEProblem, 
 			end
 			config.abh = Optimized(fc)
 		else
+			current_loss = loss(DQC, prob, config, M, _theta), theta) # Direct loss calculation
+            		push!(losses, current_loss) # Store the current loss
+			
 			grads = gradient(_theta -> loss(DQC, prob, config, M, _theta), theta)[1]
 			if DQC isa DQCType
 				update!(optimizer, theta, grads)
