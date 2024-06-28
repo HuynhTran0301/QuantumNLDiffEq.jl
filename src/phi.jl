@@ -2,11 +2,11 @@ using Zygote
 
 # Define phi functions for each type
 function phi(x, mapping::Product)
-    return 2 * asin(x)
+    return asin(x)
 end
 
 function phi(x, mapping::ChebyshevSparse)
-    return 2 * acos(x)
+    return mapping.pc * acos(x)
 end
 
 function phi(x, mapping::ChebyshevTower)
@@ -14,8 +14,8 @@ function phi(x, mapping::ChebyshevTower)
 end
 
 # Define gradient functions with proper method dispatching
-grad_phi_with_respect_to_x(x, mapping::Product) = 2 / sqrt(1 - x^2)
-grad_phi_with_respect_to_x(x, mapping::ChebyshevSparse) = -2 / sqrt(1 - x^2)
+grad_phi_with_respect_to_x(x, mapping::Product) = 1 / sqrt(1 - x^2)
+grad_phi_with_respect_to_x(x, mapping::ChebyshevSparse) = -mapping.pc / sqrt(1 - x^2)
 grad_phi_with_respect_to_x(x, mapping::ChebyshevTower) = -mapping.pc / sqrt(1 - x^2)
 
 # Define adjoints for phi with proper type dispatching
